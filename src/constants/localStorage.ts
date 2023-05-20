@@ -1,0 +1,1 @@
+export const POKEMON_GAME_KEY = 'POKEMON_GAME_KEY'
