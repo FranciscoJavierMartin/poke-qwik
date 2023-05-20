@@ -34,7 +34,7 @@ export default component$(() => {
   useTask$(async ({ track }) => {
     track(() => pokemonState.currentPage);
 
-    const pokemons = await getSmallPokemons(pokemonState.currentPage * 10, 30);
+    const pokemons = await getSmallPokemons(pokemonState.currentPage * 30, 30);
     pokemonState.pokemons = [...pokemonState.pokemons, ...pokemons];
     pokemonState.isLoading = false;
   });
