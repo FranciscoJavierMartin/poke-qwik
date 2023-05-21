@@ -1,7 +1,7 @@
-import { component$, useContext } from '@builder.io/qwik';
+import { component$, useVisibleTask$ } from '@builder.io/qwik';
 import { routeLoader$ } from '@builder.io/qwik-city';
 import { PokemonImage } from '~/components/pokemons/pokemon-image';
-import { PokemonGameContext } from '~/context/pokemon/pokemon-game.context';
+import { usePokemonGame } from '~/hooks/use-pokemon-game';
 
 export const usePokemonId = routeLoader$(({ params, redirect }) => {
   const id = Number(params.id);
@@ -18,16 +18,33 @@ export const usePokemonId = routeLoader$(({ params, redirect }) => {
 });
 
 export default component$(() => {
-  usePokemonId();
-  const pokemonGame = useContext(PokemonGameContext);
+  const id = usePokemonId();
+
+  const {
+    isPokemonVisible,
+    pokemonId,
+    toggleFromBack,
+    toggleVisible,
+    setPokemonId,
+  } = usePokemonGame();
+
+  useVisibleTask$(({ track }) => {
+    track(() => id);
+    setPokemonId(id.value);
+  });
 
   return (
     <>
-      <span class='text-5xl'>Pokemon {pokemonGame.pokemonId}</span>
-      <PokemonImage
-        id={pokemonGame.pokemonId}
-        isVisible={pokemonGame.isPokemonVisible}
-      />
+      <span class='text-5xl'>Pokemon {pokemonId.value}</span>
+      <PokemonImage id={pokemonId.value} isVisible={isPokemonVisible.value} />
+      <div class='mt-2'>
+        <button class='btn btn-primary mr-2' onClick$={toggleFromBack}>
+          Flip
+        </button>
+        <button class='btn btn-primary mr-2' onClick$={toggleVisible}>
+          {isPokemonVisible.value ? 'Hide' : 'Reveal'}
+        </button>
+      </div>
     </>
   );
 });
