@@ -4,6 +4,7 @@ import {
   useSignal,
   $,
   useStore,
+  useVisibleTask$,
 } from '@builder.io/qwik';
 import {
   type DocumentHead,
@@ -13,6 +14,7 @@ import {
 } from '@builder.io/qwik-city';
 import { PokemonImage } from '~/components/pokemons/pokemon-image';
 import { Modal } from '~/components/shared/modal/modal';
+import { getFunFactAboutPokemon } from '~/helpers/get-chat-gpt-response';
 import { getSmallPokemons } from '~/helpers/getSmallPokemons';
 
 export const usePokemonList = routeLoader$(
@@ -34,6 +36,7 @@ export default component$(() => {
   const modalData = useStore({
     id: '',
     name: '',
+    fact: '',
   });
 
   const currentOffset = useComputed$(() => {
@@ -48,6 +51,18 @@ export default component$(() => {
 
   const closeModal = $(() => {
     isModalVisible.value = false;
+  });
+
+  useVisibleTask$(({ track }) => {
+    track(() => modalData.name);
+
+    modalData.fact = '';
+
+    if (modalData.name) {
+      getFunFactAboutPokemon(modalData.name).then((fact) => {
+        modalData.fact = fact;
+      });
+    }
   });
 
   return (
@@ -83,11 +98,17 @@ export default component$(() => {
           </div>
         ))}
       </div>
-      <Modal showModal={isModalVisible.value} closeCallback={closeModal} persistent>
+      <Modal
+        showModal={isModalVisible.value}
+        closeCallback={closeModal}
+        persistent
+      >
         <div q:slot='title'>{modalData.name}</div>
         <div q:slot='content' class='flex flex-col justify-center items-center'>
           <PokemonImage id={+modalData.id} isVisible />
-          <span>Asking about</span>
+          <span>
+            {modalData.fact ? modalData.fact : `Asking about ${modalData.name}`}
+          </span>
         </div>
       </Modal>
     </>
